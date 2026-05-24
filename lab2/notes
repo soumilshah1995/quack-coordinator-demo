@@ -1,0 +1,50 @@
+# Lab 2 — Client → Coordinator → Server1 + Server2
+
+Architecture (matches the Quack talk diagram):
+
+  Client  →  Coordinator  →  Server1 (east shard, :9491)
+                          →  Server2 (west shard, :9492)
+
+Each box is DuckDB 1.5.3 + Quack in Docker.
+
+## Start the cluster
+
+cd lab2
+docker compose up --build -d
+docker compose ps
+
+Wait until server1, server2, and coordinator are healthy.
+
+## Run the client (from your Mac, DuckDB 1.5.3+)
+
+/opt/homebrew/bin/duckdb -box < client.sql
+
+Or interactively:
+
+duckdb
+CREATE SECRET (TYPE quack, SCOPE 'quack:localhost:9493', TOKEN 'coord_secret');
+ATTACH 'quack:localhost:9493' AS coord (TYPE quack, DISABLE_SSL true);
+FROM coord.all_orders ORDER BY id;
+
+## Ports
+
+| Service      | Host port | Token            |
+|--------------|-----------|------------------|
+| server1      | 9491      | server1_secret   |
+| server2      | 9492      | server2_secret   |
+| coordinator  | 9493      | coord_secret     |
+
+## Direct shard access (skip coordinator)
+
+CREATE SECRET (TYPE quack, SCOPE 'quack:localhost:9491', TOKEN 'server1_secret');
+ATTACH 'quack:localhost:9491' AS s1 (TYPE quack, DISABLE_SSL true);
+FROM s1.orders;
+
+## Stop
+
+docker compose down
+
+## Logs
+
+docker compose logs -f coordinator
+docker compose logs -f server1

@@ -1,0 +1,8 @@
+
+
+/opt/homebrew/bin/duckdb -box < /Users/sshah/IdeaProjects/study-learn/duckdb-quack-protocol/lab1/server.sql
+
+/opt/homebrew/bin/duckdb -box < /Users/sshah/IdeaProjects/study-learn/duckdb-quack-protocol/lab1/client.sql
+
+
+
